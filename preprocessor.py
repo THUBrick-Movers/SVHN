@@ -6,9 +6,7 @@ import glob
 import torchvision.transforms as transforms
 import image
 
-
-
-def parse_json(data):
+def parse_json(data):#json文件的读取函数
 
     arr = np.array([
         data['top'], data['height'], data['left'], data['width'], data['label']
@@ -17,7 +15,7 @@ def parse_json(data):
 
     return arr
 
-class SVHNDataset(Dataset):
+class SVHNDataset(Dataset):#img数据读取类
     def __init__(self, img_path, img_label, transforms=None):
         self.img_path = img_path
         self.img_label = img_label
@@ -57,35 +55,25 @@ def train_transform():
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     ])
 
+def Preprocessor(png_dir,json_dir):
+    """获取训练集相关数据"""
+    # 获取训练集目录下的所有图片
+    train_path = glob.glob(png_dir)#训练集png地址
+    train_path.sort()
+    # 获取训练集图片对应的位置标签和label数据
+    train_json = json.load(open(json_dir))#训练集json地址
+    train_label = [train_json[x]['label'] for x in train_json]
+    # 通过Pytorch加载并处理数据
 
+    train_loader = torch.utils.data.DataLoader(SVHNDataset(train_path, train_label, transforms=train_transform()),
+    batch_size=10, shuffle=False, num_workers=0,)
+    '''
+    batchsize：每批样本个数  shuffle：是否打乱顺序（True/False）   num_workers：读取的线程个数
+    '''
+    return train_loader
 
-# 加载训练集的json数据
-train_json = json.load(open('smallsize_train.json'))
-
-"""获取训练集相关数据"""
-# 获取训练集目录下的所有图片
-train_path = glob.glob('smallsize_train/*.png')
-train_path.sort()
-# 获取训练集图片对应的位置标签和label数据
-train_json = json.load(open('smallsize_train.json'))
-train_label = [train_json[x]['label'] for x in train_json]
-# 通过Pytorch加载并处理数据
-
-train_loader = torch.utils.data.DataLoader(SVHNDataset(train_path, train_label, transforms=train_transform()),
-batch_size=10, shuffle=False, num_workers=0,)
-'''
-train_loader = torch.utils.data.DataLoader(
-    SVHNDataset(train_path, train_label,
-                transforms.Compose([
-                    transforms.Resize((64, 128)), # 缩放到固定尺寸
-                    transforms.ColorJitter(0.3, 0.3, 0.2), # 颜色变换
-                    transforms.RandomRotation(5), # 随机旋转
-                    transforms.ToTensor(), # 将图片转为tensor
-                    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]) # 像素归一化
-                ])),
-    batch_size=10, # 每批样本个数
-    shuffle=False, # 是否打乱顺序
-    num_workers=0, # 读取的线程个数
-)
-'''
-print(train_loader)
+if __name__ == '__main__':
+    png_dir = 'smallsize_train/*.png'
+    json_dir = 'smallsize_train.json'
+    train_loader=Preprocessor(png_dir, json_dir)
+    print(train_loader)
