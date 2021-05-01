@@ -4,7 +4,7 @@ import torch
 from torch.utils.data.dataset import Dataset
 import glob
 import torchvision.transforms as transforms
-import image
+from PIL import Image
 
 def parse_json(data):#json文件的读取函数
 
