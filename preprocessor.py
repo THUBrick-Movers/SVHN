@@ -25,7 +25,7 @@ class SVHNDataset(Dataset):#img数据读取类
             self.transforms = None
 
     def __getitem__(self, index):
-        img = image.open(self.img_path[index]).convert('RGB')
+        img = Image.open(self.img_path[index]).convert('RGB')
         if self.transforms is not None:
             img = self.transforms(img)
         # 设置最长的字符长度为6个
